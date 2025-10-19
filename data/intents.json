@@ -1,0 +1,72 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["hello", "hi", "assalamualaikum", "hey", "good morning"],
+      "responses": ["Hello! How can I help you with FIR today?", "Hi — I can help you file or check FIR status."]
+    },
+    {
+      "tag": "file_fir",
+      "patterns": [
+        "I want to file an FIR",
+        "register a complaint",
+        "report a crime",
+        "how do I file an FIR",
+        "help me file a report"
+      ],
+      "responses": [
+        "I can help with that. Please describe the incident: what happened, when and where?",
+        "Sure — tell me the incident details (type, date, location, suspect if any)."
+      ]
+    },
+    {
+      "tag": "check_status",
+      "patterns": [
+        "check FIR status",
+        "what is the status of my FIR",
+        "status of FIR 2025-010",
+        "track my FIR",
+        "where is my FIR",
+        "FIR number 1234 status"
+      ],
+      "responses": [
+        "Please provide your FIR number (e.g., 2025-010) so I can check its status.",
+        "Enter your FIR number and I'll look it up."
+      ]
+    },
+    {
+      "tag": "get_legal_section",
+      "patterns": [
+        "which section applies to theft",
+        "what is the PPC for theft",
+        "which law is for robbery",
+        "what section is 379"
+      ],
+      "responses": [
+        "For theft, Section 379 PPC applies in Pakistan. Do you want help filing a theft FIR?"
+      ]
+    },
+    {
+      "tag": "officer_lookup",
+      "patterns": [
+        "show FIRs for G-11",
+        "list FIRs in sector F-8",
+        "search FIRs for last week",
+        "get FIRs for my area"
+      ],
+      "responses": [
+        "Okay, fetching FIR records for the given area..."
+      ]
+    },
+    {
+      "tag": "thanks",
+      "patterns": ["thanks", "thank you", "great", "well done"],
+      "responses": ["You're welcome!", "Happy to help."]
+    },
+    {
+      "tag": "fallback",
+      "patterns": [],
+      "responses": ["Sorry, I didn't understand. Can you rephrase?", "I can help with filing or checking FIRs. Type 'file FIR' or 'check status'."]
+    }
+  ]
+}
