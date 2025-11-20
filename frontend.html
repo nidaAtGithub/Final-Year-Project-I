@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIRLedger - Search & Retrieval Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .results {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            border-radius: 3px;
+        }
+        
+        .result-item h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .result-item p {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-investigation {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-closed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 FIRLedger</h1>
+            <p>Search & Retrieval Module Demo - Backend Integration</p>
+        </div>
+        
+        <div class="content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('search')">Search FIRs</button>
+                <button class="tab" onclick="switchTab('filter')">Filter FIRs</button>
+                <button class="tab" onclick="switchTab('stats')">Statistics</button>
+                <button class="tab" onclick="switchTab('updateStatus')">Update Status</button>
+                <a href="submit-fir.html" style="padding: 10px 20px; margin-top: 10px; display: inline-block; background: #28a745; color: white; border-radius: 5px; text-decoration: none; font-weight: 600;">➕ Submit New FIR</a>
+            </div>
+            
+            <!-- Search Section -->
+            <div id="search" class="tab-content active">
+                <div class="section">
+                    <h2>🔎 Search FIRs</h2>
+                    <div class="error" id="searchError"></div>
+                    <div class="success" id="searchSuccess"></div>
+                    
+                    <div class="form-group">
+                        <label for="searchType">Search Type:</label>
+                        <select id="searchType">
+                            <option value="keyword">Search by Keyword (narrative, description, crime type)</option>
+                            <option value="cnic">Search by CNIC</option>
+                            <option value="fir_id">Search by FIR ID (fuzzy match)</option>
+                            <option value="phone">Search by Phone Number</option>
+                            <option value="suspect">Search by Suspect Info</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="searchQuery">Search Query:</label>
+                        <input type="text" id="searchQuery" placeholder="Enter search term...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="searchPerPage">Results per page:</label>
+                        <select id="searchPerPage">
+                            <option value="10">10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="searchFIRs()">Search</button>
+                    
+                    <div class="loading" id="searchLoading">Searching...</div>
+                    <div id="searchPagination" style="margin-top: 15px; text-align: center; display: none;">
+                        <button onclick="prevSearchPage()" style="width: auto; padding: 8px 15px; margin-right: 10px;">← Previous</button>
+                        <span id="searchPageInfo" style="margin: 0 15px;"></span>
+                        <button onclick="nextSearchPage()" style="width: auto; padding: 8px 15px; margin-left: 10px;">Next →</button>
+                    </div>
+                    <div class="results" id="searchResults"></div>
+                </div>
+            </div>
+            
+            <!-- Filter Section -->
+            <div id="filter" class="tab-content">
+                <div class="section">
+                    <h2>🎯 Filter FIRs</h2>
+                    <div class="error" id="filterError"></div>
+                    <div class="success" id="filterSuccess"></div>
+                    
+                    <div class="form-group">
+                        <label for="filterLocation">Location:</label>
+                        <input type="text" id="filterLocation" placeholder="e.g., Islamabad">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="filterCrimeCategory">Crime Category:</label>
+                        <input type="text" id="filterCrimeCategory" placeholder="e.g., Theft">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="filterStatus">Status:</label>
+                        <select id="filterStatus">
+                            <option value="">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Under Investigation">Under Investigation</option>
+                            <option value="Charges Filed">Charges Filed</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="filterStartDate">Start Date:</label>
+                            <input type="date" id="filterStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="filterEndDate">End Date:</label>
+                            <input type="date" id="filterEndDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="filterPerPage">Results per page:</label>
+                        <select id="filterPerPage">
+                            <option value="10">10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="filterFIRs()">Filter</button>
+                    <button onclick="exportFilterResults()" style="background: #28a745; margin-left: 10px;">📥 Export CSV</button>
+                    
+                    <div class="loading" id="filterLoading">Filtering...</div>
+                    <div id="filterPagination" style="margin-top: 15px; text-align: center; display: none;">
+                        <button onclick="prevFilterPage()" style="width: auto; padding: 8px 15px; margin-right: 10px;">← Previous</button>
+                        <span id="filterPageInfo" style="margin: 0 15px;"></span>
+                        <button onclick="nextFilterPage()" style="width: auto; padding: 8px 15px; margin-left: 10px;">Next →</button>
+                    </div>
+                    <div class="results" id="filterResults"></div>
+                </div>
+            </div>
+            
+            <!-- Stats Section -->
+            <div id="stats" class="tab-content">
+                <div class="section">
+                    <h2>📊 FIR Statistics</h2>
+                    <div class="error" id="statsError"></div>
+                    
+                    <button onclick="getStats()">Load Statistics</button>
+                    
+                    <div class="loading" id="statsLoading">Loading...</div>
+                    <div id="statsContainer"></div>
+                </div>
+            </div>
+            
+            <!-- Update Status Section -->
+            <div id="updateStatus" class="tab-content">
+                <div class="section">
+                    <h2>📝 Update FIR Status</h2>
+                    <div class="error" id="updateError"></div>
+                    <div class="success" id="updateSuccess"></div>
+                    
+                    <div class="form-group">
+                        <label for="updateFirId">FIR Reference ID:</label>
+                        <input type="text" id="updateFirId" placeholder="e.g., FIR-ISL-2025-01-19-A7F3D2B1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="updateNewStatus">New Status:</label>
+                        <select id="updateNewStatus">
+                            <option value="Pending">Pending</option>
+                            <option value="Under Investigation">Under Investigation</option>
+                            <option value="Charges Filed">Charges Filed</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="updateNotes">Status Notes:</label>
+                        <textarea id="updateNotes" rows="4" placeholder="Add notes about the status update..."></textarea>
+                    </div>
+                    
+                    <button onclick="updateStatus()">Update Status</button>
+                    
+                    <div class="loading" id="updateLoading">Updating...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentSearchPage = 1;
+        let currentFilterPage = 1;
+        let lastSearchRequest = null;
+        let lastFilterRequest = null;
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function showError(elementId, message) {
+            const elem = document.getElementById(elementId);
+            elem.textContent = message;
+            elem.style.display = 'block';
+            setTimeout(() => elem.style.display = 'none', 5000);
+        }
+        
+        function showSuccess(elementId, message) {
+            const elem = document.getElementById(elementId);
+            elem.textContent = message;
+            elem.style.display = 'block';
+            setTimeout(() => elem.style.display = 'none', 5000);
+        }
+        
+        function showLoading(elementId, show = true) {
+            document.getElementById(elementId).style.display = show ? 'block' : 'none';
+        }
+        
+        async function searchFIRs(page = 1) {
+            const searchType = document.getElementById('searchType').value;
+            const searchQuery = document.getElementById('searchQuery').value;
+            const perPage = parseInt(document.getElementById('searchPerPage').value);
+            
+            if (!searchQuery.trim()) {
+                showError('searchError', 'Please enter a search query');
+                return;
+            }
+            
+            currentSearchPage = page;
+            lastSearchRequest = { searchType, searchQuery, perPage };
+            
+            showLoading('searchLoading', true);
+            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('searchPagination').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/search-firs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: searchQuery,
+                        search_type: searchType,
+                        page: page,
+                        per_page: perPage
+                    })
+                });
+                
+                const data = await response.json();
+                showLoading('searchLoading', false);
+                
+                if (data.success && data.results.length > 0) {
+                    displayResults(data.results, 'searchResults');
+                    showSuccess('searchSuccess', `Found ${data.pagination.total} FIR(s)`);
+                    
+                    // Show pagination
+                    if (data.pagination.total_pages > 1) {
+                        document.getElementById('searchPageInfo').textContent = 
+                            `Page ${data.pagination.page} of ${data.pagination.total_pages}`;
+                        document.getElementById('searchPagination').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('searchResults').innerHTML = '<p style="text-align: center; color: #999;">No FIRs found</p>';
+                }
+            } catch (error) {
+                showLoading('searchLoading', false);
+                showError('searchError', `Error: ${error.message}`);
+            }
+        }
+        
+        function prevSearchPage() {
+            if (currentSearchPage > 1) {
+                searchFIRs(currentSearchPage - 1);
+            }
+        }
+        
+        function nextSearchPage() {
+            searchFIRs(currentSearchPage + 1);
+        }
+        
+        async function filterFIRs(page = 1) {
+            const location = document.getElementById('filterLocation').value;
+            const crimeCategory = document.getElementById('filterCrimeCategory').value;
+            const status = document.getElementById('filterStatus').value;
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            const perPage = parseInt(document.getElementById('filterPerPage').value);
+            
+            currentFilterPage = page;
+            lastFilterRequest = { location, crimeCategory, status, startDate, endDate, perPage };
+            
+            showLoading('filterLoading', true);
+            document.getElementById('filterResults').innerHTML = '';
+            document.getElementById('filterPagination').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/filter-firs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        location: location || null,
+                        crime_category: crimeCategory || null,
+                        status: status || null,
+                        start_date: startDate || null,
+                        end_date: endDate || null,
+                        page: page,
+                        per_page: perPage
+                    })
+                });
+                
+                const data = await response.json();
+                showLoading('filterLoading', false);
+                
+                if (data.success && data.results.length > 0) {
+                    displayResults(data.results, 'filterResults');
+                    showSuccess('filterSuccess', `Found ${data.pagination.total} FIR(s)`);
+                    
+                    // Show pagination
+                    if (data.pagination.total_pages > 1) {
+                        document.getElementById('filterPageInfo').textContent = 
+                            `Page ${data.pagination.page} of ${data.pagination.total_pages}`;
+                        document.getElementById('filterPagination').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('filterResults').innerHTML = '<p style="text-align: center; color: #999;">No FIRs match your filters</p>';
+                }
+            } catch (error) {
+                showLoading('filterLoading', false);
+                showError('filterError', `Error: ${error.message}`);
+            }
+        }
+        
+        function prevFilterPage() {
+            if (currentFilterPage > 1) {
+                filterFIRs(currentFilterPage - 1);
+            }
+        }
+        
+        function nextFilterPage() {
+            filterFIRs(currentFilterPage + 1);
+        }
+        
+        async function exportFilterResults() {
+            const location = document.getElementById('filterLocation').value;
+            const crimeCategory = document.getElementById('filterCrimeCategory').value;
+            const status = document.getElementById('filterStatus').value;
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/export-firs-csv`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        location: location || null,
+                        crime_category: crimeCategory || null,
+                        status: status || null,
+                        start_date: startDate || null,
+                        end_date: endDate || null
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `firs_export_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showSuccess('filterSuccess', 'CSV exported successfully!');
+                } else {
+                    const data = await response.json();
+                    showError('filterError', data.error || 'Export failed');
+                }
+            } catch (error) {
+                showError('filterError', `Export error: ${error.message}`);
+            }
+        }
+        
+        async function getStats() {
+            showLoading('statsLoading', true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/fir-stats`);
+                const data = await response.json();
+                showLoading('statsLoading', false);
+                
+                if (data.success) {
+                    const html = `
+                        <div class="stats">
+                            <div class="stat-card">
+                                <h3>${data.total_firs}</h3>
+                                <p>Total FIRs</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.by_crime_category.length}</h3>
+                                <p>Crime Categories</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.by_location.length}</h3>
+                                <p>Locations</p>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px; color: #667eea;">By Crime Category:</h3>
+                        <div class="results">
+                            ${data.by_crime_category.map(cat => `
+                                <div class="result-item">
+                                    <strong>${cat._id || 'Unknown'}</strong>: ${cat.count} FIR(s)
+                                </div>
+                            `).join('') || '<p style="text-align: center; color: #999;">No data available</p>'}
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #667eea;">By Location:</h3>
+                        <div class="results">
+                            ${data.by_location.map(loc => `
+                                <div class="result-item">
+                                    <strong>${loc._id || 'Unknown'}</strong>: ${loc.count} FIR(s)
+                                </div>
+                            `).join('') || '<p style="text-align: center; color: #999;">No data available</p>'}
+                        </div>
+                    `;
+                    document.getElementById('statsContainer').innerHTML = html;
+                } else {
+                    showError('statsError', data.error);
+                }
+            } catch (error) {
+                showLoading('statsLoading', false);
+                showError('statsError', `Error: ${error.message}`);
+            }
+        }
+        
+        async function updateStatus() {
+            const firId = document.getElementById('updateFirId').value;
+            const newStatus = document.getElementById('updateNewStatus').value;
+            const notes = document.getElementById('updateNotes').value;
+            
+            if (!firId.trim()) {
+                showError('updateError', 'Please enter a FIR Reference ID');
+                return;
+            }
+            
+            showLoading('updateLoading', true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/update-fir-status/${firId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        status: newStatus,
+                        notes: notes || null
+                    })
+                });
+                
+                const data = await response.json();
+                showLoading('updateLoading', false);
+                
+                if (data.success) {
+                    showSuccess('updateSuccess', data.message);
+                    document.getElementById('updateNotes').value = '';
+                } else {
+                    showError('updateError', data.error);
+                }
+            } catch (error) {
+                showLoading('updateLoading', false);
+                showError('updateError', `Error: ${error.message}`);
+            }
+        }
+        
+        function displayResults(results, containerId) {
+            const html = results.map(fir => `
+                <div class="result-item">
+                    <h3>${fir.reference_id}</h3>
+                    <p><strong>Name:</strong> ${fir.full_name || 'N/A'}</p>
+                    <p><strong>CNIC:</strong> ${fir.cnic || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${fir.location || 'N/A'}</p>
+                    <p><strong>Crime Category:</strong> ${fir.crime_category || 'N/A'}</p>
+                    <p><strong>Date:</strong> ${fir.date_of_incident || 'N/A'}</p>
+                    <span class="status-badge status-${fir.status ? fir.status.toLowerCase().replace(/ /g, '-') : 'unknown'}">
+                        ${fir.status || 'Unknown'}
+                    </span>
+                </div>
+            `).join('');
+            
+            document.getElementById(containerId).innerHTML = html;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit FIR - FIRLedger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        
+        .info {
+            background: #cce5ff;
+            color: #004085;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            font-size: 0.95em;
+        }
+        
+        .nav-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+        
+        .nav-links a {
+            display: inline-block;
+            margin: 0 15px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #764ba2;
+        }
+        
+        .reference-id {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Submit FIR</h1>
+            <p>File a First Information Report in FIRLedger</p>
+        </div>
+        
+        <div class="content">
+            <div class="info">
+                ℹ️ Fill in all required fields (marked with *) to submit your FIR. A unique reference ID will be generated.
+            </div>
+            
+            <div class="error" id="errorMsg"></div>
+            <div class="success" id="successMsg">
+                <strong>✓ FIR Submitted Successfully!</strong>
+                <div class="reference-id" id="refId"></div>
+                <p style="margin-top: 10px;">Use this reference ID to search and track your FIR.</p>
+            </div>
+            
+            <form id="firForm">
+                <!-- Personal Information -->
+                <h2 style="color: #667eea; margin-bottom: 20px; font-size: 1.3em;">👤 Personal Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" required placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="cnic">CNIC *</label>
+                        <input type="text" id="cnic" required placeholder="12345-6789012-3">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="text" id="phone" required placeholder="0300-1234567">
+                    </div>
+                </div>
+                
+                <!-- Incident Information -->
+                <h2 style="color: #667eea; margin: 30px 0 20px 0; font-size: 1.3em;">🚨 Incident Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="crimeCategory">Crime Category *</label>
+                        <select id="crimeCategory" required>
+                            <option value="">Select a category</option>
+                            <option value="Theft">Theft</option>
+                            <option value="Robbery">Robbery</option>
+                            <option value="Burglary">Burglary</option>
+                            <option value="Assault">Assault</option>
+                            <option value="Fraud">Fraud</option>
+                            <option value="Cyber Crime">Cyber Crime</option>
+                            <option value="Harassment">Harassment</option>
+                            <option value="Vandalism">Vandalism</option>
+                            <option value="Drug Trafficking">Drug Trafficking</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location *</label>
+                        <input type="text" id="location" required placeholder="City/District (e.g., Islamabad)">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateOfIncident">Date of Incident *</label>
+                        <input type="date" id="dateOfIncident" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeOfIncident">Time of Incident</label>
+                        <input type="time" id="timeOfIncident">
+                    </div>
+                </div>
+                
+                <!-- Incident Details -->
+                <h2 style="color: #667eea; margin: 30px 0 20px 0; font-size: 1.3em;">📋 Incident Details</h2>
+                
+                <div class="form-group">
+                    <label for="citizenNarrative">Your Description of the Incident *</label>
+                    <textarea id="citizenNarrative" required placeholder="Describe what happened in detail..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="suspectInfo">Suspect Information</label>
+                    <textarea id="suspectInfo" placeholder="Description of suspect(s) if known..."></textarea>
+                </div>
+                
+                <button type="submit">Submit FIR</button>
+            </form>
+            
+            <div class="nav-links">
+                <a href="frontend.html">🔍 Search & Retrieve FIRs</a>
+                <a href="http://localhost:8000/docs">📚 API Documentation</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // Set today's date as default
+        document.getElementById('dateOfIncident').valueAsDate = new Date();
+        
+        document.getElementById('firForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                full_name: document.getElementById('fullName').value,
+                cnic: document.getElementById('cnic').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                crime_category: document.getElementById('crimeCategory').value,
+                location: document.getElementById('location').value,
+                date_of_incident: document.getElementById('dateOfIncident').value,
+                time_of_incident: document.getElementById('timeOfIncident').value || null,
+                citizen_narrative: document.getElementById('citizenNarrative').value,
+                suspect_info: document.getElementById('suspectInfo').value || null,
+                incident_description: null,
+                status: "Pending"
+            };
+            
+            // Hide previous messages
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'none';
+            
+            // Validate CNIC format
+            const cnicRegex = /^\d{5}-\d{7}-\d$/;
+            if (!cnicRegex.test(formData.cnic)) {
+                showError('Invalid CNIC format. Use format: 12345-6789012-3');
+                return;
+            }
+            
+            // Validate phone format
+            const phoneRegex = /^03\d{2}-?\d{7}$/;
+            if (!phoneRegex.test(formData.phone)) {
+                showError('Invalid phone format. Use format: 0300-1234567 or 03001234567');
+                return;
+            }
+            
+            try {
+                // Step 1: Generate description using AI
+                console.log('Generating FIR description...');
+                const descResponse = await fetch(`${API_BASE}/generate-description`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const descData = await descResponse.json();
+                if (descData.error) {
+                    showError(`Error generating description: ${descData.error}`);
+                    return;
+                }
+                
+                formData.incident_description = descData.description;
+                
+                // Step 2: Submit FIR with generated description
+                console.log('Submitting FIR to database...');
+                const submitResponse = await fetch(`${API_BASE}/submit-fir`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const submitData = await submitResponse.json();
+                
+                if (submitData.reference_id) {
+                    // Success
+                    document.getElementById('refId').innerHTML = `<strong>Reference ID:</strong> ${submitData.reference_id}`;
+                    document.getElementById('successMsg').style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('firForm').reset();
+                    document.getElementById('dateOfIncident').valueAsDate = new Date();
+                    
+                    // Scroll to success message
+                    document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showError(submitData.error || 'Failed to submit FIR');
+                }
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            }
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
