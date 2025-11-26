@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { API_ENDPOINTS } from "@/lib/api";
 
 interface FIR {
   reference_id: string;
@@ -19,7 +20,7 @@ interface FIR {
   date_of_incident: string;
   status: string;
   created_at: string;
-  // additional fields used in modal (may be undefined)
+  // optional fields for modal details
   cnic?: string;
   phone?: string;
   email?: string;
@@ -68,7 +69,7 @@ const SearchFirs = () => {
     { label: "Profile", icon: User, active: false },
   ];
 
-  // Helper: sort FIRs according to selected option
+  // Helper to sort FIRs according to selected option
   const sortFIRs = (firs: FIR[]) => {
     const sorted = [...firs];
     if (sortOption === 'date_desc') {
@@ -106,7 +107,7 @@ const SearchFirs = () => {
     }
     setIsSearching(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/search-firs", {
+      const response = await fetch(API_ENDPOINTS.SEARCH_FIRS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,7 +156,7 @@ const SearchFirs = () => {
     setIsSearching(true);
     setUseFilters(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/filter-firs", {
+      const response = await fetch(API_ENDPOINTS.FILTER_FIRS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -188,7 +189,7 @@ const SearchFirs = () => {
     }
   };
 
-  // Pagination effect
+  // Pagination effect – re‑run search/filter when page changes
   useEffect(() => {
     if (searchResults.length > 0) {
       if (useFilters) {
@@ -203,7 +204,7 @@ const SearchFirs = () => {
     setIsLoadingDetails(true);
     setIsModalOpen(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/get-fir-details/${referenceId}`);
+      const response = await fetch(API_ENDPOINTS.GET_FIR_DETAILS(referenceId));
       const data = await response.json();
       if (response.ok && data.fir) {
         setSelectedFIR(data.fir);
