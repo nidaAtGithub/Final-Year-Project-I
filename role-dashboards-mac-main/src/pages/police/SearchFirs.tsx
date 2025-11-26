@@ -221,6 +221,146 @@ const SearchFirs = () => {
     }
   };
 
+  // ----- Print FIR Function -----
+  const handlePrintFIR = () => {
+    if (!selectedFIR) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error("Please allow popups to print FIR");
+      return;
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>FIR - ${selectedFIR.reference_id}</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+          .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
+          .header p { margin: 5px 0 0; color: #666; }
+          .meta-info { display: flex; justify-content: space-between; margin-bottom: 30px; background: #f5f5f5; padding: 15px; border-radius: 5px; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; color: #2c3e50; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .field { margin-bottom: 10px; }
+          .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+          .value { font-weight: 500; font-size: 14px; }
+          .narrative { background: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 4px; white-space: pre-line; }
+          .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>First Information Report</h1>
+          <p>Police Department • Government of Pakistan</p>
+        </div>
+
+        <div class="meta-info">
+          <div>
+            <div class="label">FIR Reference ID</div>
+            <div class="value" style="font-size: 18px;">${selectedFIR.reference_id}</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="label">Date Filed</div>
+            <div class="value">${new Date(selectedFIR.created_at).toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Complainant Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Full Name</div>
+              <div class="value">${selectedFIR.full_name}</div>
+            </div>
+            <div class="field">
+              <div class="label">CNIC</div>
+              <div class="value">${selectedFIR.cnic || 'N/A'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Phone Contact</div>
+              <div class="value">${selectedFIR.phone || 'N/A'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Email Address</div>
+              <div class="value">${selectedFIR.email || 'N/A'}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Incident Details</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Crime Category</div>
+              <div class="value" style="text-transform: capitalize;">${selectedFIR.crime_category}</div>
+            </div>
+            <div class="field">
+              <div class="label">Location</div>
+              <div class="value">${selectedFIR.location}</div>
+            </div>
+            <div class="field">
+              <div class="label">Date of Incident</div>
+              <div class="value">${selectedFIR.date_of_incident}</div>
+            </div>
+            <div class="field">
+              <div class="label">Time of Incident</div>
+              <div class="value">${selectedFIR.time_of_incident || 'N/A'}</div>
+            </div>
+          </div>
+        </div>
+
+        ${selectedFIR.suspect_info ? `
+        <div class="section">
+          <div class="section-title">Suspect Information</div>
+          <div class="narrative">${selectedFIR.suspect_info}</div>
+        </div>
+        ` : ''}
+
+        ${selectedFIR.incident_description ? `
+        <div class="section">
+          <div class="section-title">Incident Description</div>
+          <div class="narrative">${selectedFIR.incident_description}</div>
+        </div>
+        ` : ''}
+
+        <div class="section">
+          <div class="section-title">Current Status</div>
+          <div class="field">
+            <div class="label">Status</div>
+            <div class="value">${selectedFIR.status}</div>
+          </div>
+          ${selectedFIR.status_notes ? `
+          <div class="field" style="margin-top: 10px;">
+            <div class="label">Status Notes</div>
+            <div class="narrative">${selectedFIR.status_notes}</div>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="footer">
+          <p>This is a computer-generated document and does not require a signature.</p>
+          <p>Generated on ${new Date().toLocaleString('en-PK')}</p>
+        </div>
+
+        <script>
+          window.onload = function() { window.print(); }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Under Investigation":
@@ -540,7 +680,7 @@ const SearchFirs = () => {
                 <div className="flex gap-3 pt-4 border-t">
                   <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
                   <Button variant="outline">Update Status</Button>
-                  <Button variant="outline">Print FIR</Button>
+                  <Button variant="outline" onClick={handlePrintFIR}>Print FIR</Button>
                 </div>
               </div>
             ) : (
