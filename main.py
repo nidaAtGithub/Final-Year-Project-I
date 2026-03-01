@@ -7,5 +7,7 @@ app.include_router(router)
 
 # Optional: a root endpoint
 @app.get("/")
+async def metrics():
+    return {"status": "ok"}
 def root():
     return {"message": "AI Chatbot API is running."}
