@@ -2,7 +2,7 @@
 2. uvicorn main:app --reload
 3. npm install mongodb
 4. uvicorn main:app --reload --port 8002
-5.  uvicorn flaskapp:app --reload --host 127.0.0.1 --port 8000
+5. uvicorn flaskapp:app --reload --host 127.0.0.1 --port 8000
 6. uvicorn chatbot:app --reload --host 127.0.0.1 --port 8001
 7. uvicorn audio:app --reload --host 127.0.0.1 --port 8002
 8. http://127.0.0.1:8001/docs (Check the running)
@@ -24,7 +24,6 @@ Upload JSON to IPFS →
 Pinata returns CID →
 CID stored on Blockchain
 
-
 const contract = await ethers.getContractAt(
    "FIRRegistry",
    "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
@@ -32,5 +31,5 @@ const contract = await ethers.getContractAt(
  await contract.totalFIRs()
  await contract.getFIR(0)
 
-github Access key:
-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
+ github Access key:
+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
