@@ -18,7 +18,7 @@ const CitizenDashboard = () => {
  useEffect(() => {
   const fetchFIRs = async () => {
     try {
-      {/*const response = await axios.get("http://localhost:800/get-firs");*/}
+      {}
       const response = await axios.get("http://localhost:8000/get-firs");
       setMyFIRs(response.data.firs);
     } catch (error) {
@@ -82,8 +82,8 @@ const [notifications, setNotifications] = useState(3);
     navItems={navItems}
     title="Citizen Portal"
   >
-    {/* Quick Stats */}
-    <div className="grid md:grid-cols-4 gap-6 mb-8">
+
+  <div className="grid md:grid-cols-4 gap-6 mb-8">
       <Card className="border-border/50">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
@@ -132,8 +132,7 @@ const [notifications, setNotifications] = useState(3);
         </CardContent>
       </Card>
     </div>
-
-    {/* Quick Actions */}
+  
    <CardContent>
     <div className="grid md:grid-cols-3 gap-4">
       <Link to="/citizen/dashboard/file-fir">

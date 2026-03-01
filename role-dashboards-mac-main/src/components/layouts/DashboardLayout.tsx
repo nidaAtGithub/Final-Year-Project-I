@@ -79,7 +79,12 @@ const DashboardLayout = ({ children, role, navItems, title }: DashboardLayoutPro
       default: return "bg-primary";
     }
   };
-
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("firDraft"); 
+  localStorage.removeItem("userEmail"); 
+  navigate("/");
+};
   return (
     <div className="min-h-screen bg-background">
       {/* Top Header */}
@@ -127,7 +132,7 @@ const DashboardLayout = ({ children, role, navItems, title }: DashboardLayoutPro
               variant="ghost" 
               size="sm" 
               className="text-navy-foreground hover:bg-navy-foreground/10"
-              onClick={() => navigate("/")}
+              onClick={handleLogout}
             >
               <LogOut className="w-4 h-4 mr-2" />
               Logout

@@ -93,7 +93,7 @@ const AIChatbot = () => {
     setMessages(chat.messages);
   };
 
-  // 🧹 Delete all chat history
+  // Delete all chat history
   const handleDeleteAllChats = () => {
     if (confirm("Are you sure you want to delete all chat history?")) {
       setChatHistory([]);

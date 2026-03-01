@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 // Fix TypeScript error for window.mediaRecorder
@@ -16,8 +16,6 @@ declare global {
   }
 }
 
-
-
 const FileFir = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [crimeCategory, setCrimeCategory] = useState("");
@@ -25,6 +23,8 @@ const FileFir = () => {
   const [selectedEvidence, setSelectedEvidence] = useState<File[]>([]);
   const [recordedAudio, setRecordedAudio] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
   const [mediaRecorderRef, setMediaRecorderRef] = useState<MediaRecorder | null>(null);
   const navItems = [
     { label: "File FIR", icon: FileText, active: true },
@@ -58,10 +58,10 @@ const FileFir = () => {
     crime_category: formValues.crime_category,        
     location: (document.getElementById("location") as HTMLInputElement).value,
     date_of_incident: (document.getElementById("date") as HTMLInputElement).value,
-    time_of_incident: formValues.time_of_incident,    // ✅ added this line
+    time_of_incident: formValues.time_of_incident,   
     suspect_info: (document.getElementById("suspects") as HTMLTextAreaElement)?.value || "",
     citizen_narrative: citizenNarrative,
-    description: formValues.description,
+    incident_description: formValues.description,
   };
 
   try {
@@ -90,32 +90,71 @@ const FileFir = () => {
 };
 
 
-const handleSubmit = async (e: React.FormEvent) => {
+// Format phone number to 03XX-XXXXXXX format
+const formatPhoneNumber = (phone: string): string => {
+  // Remove all non-digit characters
+  const digitsOnly = phone.replace(/\D/g, "");
+  
+  // If starts with 92 (country code), replace with 0
+  let formatted = digitsOnly.startsWith("92") 
+    ? "0" + digitsOnly.slice(2)
+    : digitsOnly;
+  
+  // Ensure it starts with 0 and has correct length
+  if (!formatted.startsWith("0")) {
+    formatted = "0" + formatted;
+  }
+  
+  // Format as 03XX-XXXXXXX (4 digits, hyphen, 7 digits)
+  if (formatted.length === 11) {
+    return formatted.slice(0, 4) + "-" + formatted.slice(4);
+  }
+  
+  return formatted; // Return as-is if doesn't match expected length
+};
+
+/*const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
   const payload = {
     full_name: formValues.full_name,
     cnic: formValues.cnic,
-    phone: formValues.phone,
+    phone: formatPhoneNumber(formValues.phone),
     email: formValues.email,
     crime_category: formValues.crime_category,
     location: formValues.location,
     date_of_incident: formValues.date_of_incident,
     time_of_incident: formValues.time_of_incident,   
-    citizen_narrative: formValues.narrative,
-    suspect_info: formValues.suspect_information,
-    incident_description: formValues.description, 
+    citizen_narrative: formValues.narrative,          
+    suspect_info: formValues.suspect_information,     
+    incident_description: formValues.description,    
   };
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/submit-fir", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch("http://127.0.0.1:8001/submit-fir", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
     if (res.ok) {
       toast.success("FIR submitted successfully!");
+      setFormValues({
+        full_name: "",
+        cnic: "",
+        phone: "",
+        email: "",
+        crime_category: "",
+        location: "",
+        date_of_incident: "",
+        time_of_incident: "",
+        narrative: "",
+        suspect_information: "",
+        description: "",
+      });
+      setSelectedEvidence([]);
+      setRecordedAudio(null);
+
     } else {
       toast.error("Failed to submit FIR.");
     }
@@ -123,25 +162,144 @@ const handleSubmit = async (e: React.FormEvent) => {
     console.error(err);
     toast.error("Backend connection error.");
   }
+};*/
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  const payload = {
+    full_name: formValues.full_name,
+    cnic: formValues.cnic,
+    phone: formatPhoneNumber(formValues.phone),
+    email: formValues.email,
+    crime_category: formValues.crime_category,
+    location: formValues.location,
+    date_of_incident: formValues.date_of_incident,
+    time_of_incident: formValues.time_of_incident,
+    citizen_narrative: formValues.narrative,
+    suspect_info: formValues.suspect_information,
+    incident_description: formValues.description,
+  };
+
+  try {
+    // CREATE FORMDATA INSTEAD OF JSON
+    const formData = new FormData();
+
+    // Add text fields
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value as string);
+      }
+    });
+
+    // Add evidence files
+    selectedEvidence.forEach((file) => {
+      formData.append("evidence", file);
+    });
+
+    const res = await fetch("http://127.0.0.1:8001/submit-fir", {
+      method: "POST",
+      body: formData,   
+    });
+
+    if (res.ok) {
+      toast.success("FIR submitted successfully!");
+      localStorage.removeItem("firDraft"); // 🔥 ADD THIS
+
+      setFormValues({
+        full_name: "",
+        cnic: "",
+        phone: "",
+        email: "",
+        crime_category: "",
+        location: "",
+        date_of_incident: "",
+        time_of_incident: "",
+        narrative: "",
+        suspect_information: "",
+        description: "",
+      });
+
+      setSelectedEvidence([]);
+      setRecordedAudio(null);
+
+    } else {
+      toast.error("Failed to submit FIR.");
+    }
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Backend connection error.");
+  } finally {
+    setIsSubmitting(false);
+  }
 };
 
+interface FIRFormValues {
+  full_name: string;
+  cnic: string;
+  phone: string;
+  email: string;
+  crime_category: string;
+  location: string;
+  date_of_incident: string;
+  time_of_incident: string;
+  narrative: string;
+  suspect_information: string;
+  description: string;
+}
 
-
-const [formValues, setFormValues] = useState({
+const [formValues, setFormValues] = useState<FIRFormValues>({
   full_name: "",
   cnic: "",
   phone: "",
-  email: "",            
+  email: "",
   crime_category: "",
   location: "",
   date_of_incident: "",
   time_of_incident: "",
   narrative: "",
   suspect_information: "",
-  description: "",  
+  description: "",
 });
+useEffect(() => {
+  if (!hasMounted) return;
 
+  const draft = {
+    ...formValues,
+    evidence_meta: selectedEvidence.map((file) => ({
+      name: file.name,
+      type: file.type,
+    })),
+  };
 
+  localStorage.setItem("firDraft", JSON.stringify(draft));
+}, [formValues, selectedEvidence, hasMounted]);
+
+useEffect(() => {
+  const savedDraft = localStorage.getItem("firDraft");
+
+  if (savedDraft) {
+    try {
+      const parsed = JSON.parse(savedDraft);
+      const { evidence_meta, ...formOnlyFields } = parsed;
+
+      setFormValues(formOnlyFields);
+
+      if (evidence_meta?.length > 0) {
+        toast.info("Previously selected evidence needs to be re-uploaded.");
+      }
+
+    } catch {
+      localStorage.removeItem("firDraft");
+    }
+  }
+
+  // Now allow saving
+  setHasMounted(true);
+
+}, []);
 const handleAudioRecording = async () => {
   if (isRecording && mediaRecorderRef) {
     mediaRecorderRef.stop();
@@ -215,6 +373,33 @@ const handleAudioRecording = async () => {
   }
 };
 
+const handleSaveDraft = async () => {
+  try {
+    const formData = new FormData();
+
+    Object.entries(formValues).forEach(([key, value]) => {
+      formData.append(key, value || "");
+    });
+
+    const res = await fetch("http://localhost:8001/save-draft", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      toast.success("Draft saved successfully!");
+      console.log("Draft ID:", data.reference_id);
+    } else {
+      toast.error("Failed to save draft.");
+    }
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Error saving draft.");
+  }
+};
 
   return (
     <DashboardLayout role="citizen" navItems={navItems} title="Citizen Portal">
@@ -269,11 +454,12 @@ const handleAudioRecording = async () => {
                       id="phone"
                       value={formValues.phone}
                       onChange={(e) => setFormValues({ ...formValues, phone: e.target.value })}
-                      placeholder="+92 300 1234567"
+                      placeholder="0300-1234567 or +923001234567"
                       className="pl-10"
                       required
                     />
                   </div>
+                  <p className="text-xs text-muted-foreground">Format: 03XX-XXXXXXX (e.g., 0308-5089812)</p>
                 </div>
 
                 <div className="space-y-2">
@@ -547,7 +733,9 @@ const handleAudioRecording = async () => {
 
               {/* Buttons */}
               <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline">Save as Draft</Button>
+                <Button type="button" onClick={handleSaveDraft}>
+                  Save as Draft
+                </Button>
                 <Button
                   type="button"
                   onClick={handleGenerateDescription}
