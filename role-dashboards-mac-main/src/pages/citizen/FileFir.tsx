@@ -113,57 +113,6 @@ const formatPhoneNumber = (phone: string): string => {
   return formatted; // Return as-is if doesn't match expected length
 };
 
-/*const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const payload = {
-    full_name: formValues.full_name,
-    cnic: formValues.cnic,
-    phone: formatPhoneNumber(formValues.phone),
-    email: formValues.email,
-    crime_category: formValues.crime_category,
-    location: formValues.location,
-    date_of_incident: formValues.date_of_incident,
-    time_of_incident: formValues.time_of_incident,   
-    citizen_narrative: formValues.narrative,          
-    suspect_info: formValues.suspect_information,     
-    incident_description: formValues.description,    
-  };
-
-  try {
-    const res = await fetch("http://127.0.0.1:8001/submit-fir", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-    if (res.ok) {
-      toast.success("FIR submitted successfully!");
-      setFormValues({
-        full_name: "",
-        cnic: "",
-        phone: "",
-        email: "",
-        crime_category: "",
-        location: "",
-        date_of_incident: "",
-        time_of_incident: "",
-        narrative: "",
-        suspect_information: "",
-        description: "",
-      });
-      setSelectedEvidence([]);
-      setRecordedAudio(null);
-
-    } else {
-      toast.error("Failed to submit FIR.");
-    }
-  } catch (err) {
-    console.error(err);
-    toast.error("Backend connection error.");
-  }
-};*/
-
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsSubmitting(true);
