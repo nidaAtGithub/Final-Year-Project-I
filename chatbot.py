@@ -1,12 +1,33 @@
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
 import asyncio
 import httpx
 import traceback
 
-app = FastAPI()
+#app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ✅ Startup: warm up model
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(OLLAMA_URL, json={
+                "model": MODEL_NAME,
+                "prompt": "hi",
+                "stream": False,
+                "options": {"num_predict": 5}
+            }, timeout=60)
+            print("✅ Ollama model warmed up")
+        except Exception as e:
+            print(f"⚠️ Warm up failed: {e}")
+    
+    yield  # app runs here
+    
+    # shutdown logic here if needed
 
+app = FastAPI(lifespan=lifespan)
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
@@ -51,7 +72,7 @@ async def chat(data: ChatRequest):
                     "stream": False,
                     "options": {
                         "temperature": 0.6,
-                        "num_predict": 512
+                        "num_predict": 256
                     }
                 }
 
@@ -82,5 +103,5 @@ async def chat(data: ChatRequest):
             "response": "Error: Could not get a response from Ollama.",
             "error": str(e)
         }
-
+    
 app.include_router(router)
